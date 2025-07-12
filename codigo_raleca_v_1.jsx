@@ -182,13 +182,16 @@ function Results({ orderData, quantities, setQuantities }) {
   let entries = providers.flatMap((p, pi) =>
     p.items
       .filter((k) => orderData.products[k])
-      .map((k, idx) => ({
-        id: `${pi}-${idx}`,
-        provider: p.name,
-        item: productList[k].label,
-        available: productList[k].available,
-        price: productList[k].price * p.rate,
-      }))
+      .map((k) => {
+        const itemIdx = p.items.indexOf(k);
+        return {
+          id: `${pi}-${itemIdx}`,
+          provider: p.name,
+          item: productList[k].label,
+          available: productList[k].available,
+          price: productList[k].price * p.rate,
+        };
+      })
   );
 
   entries.sort((a, b) => {
@@ -278,13 +281,17 @@ function CheckoutPage({ orderData, quantities, onBack }) {
 
   const lines = providers.flatMap((p, pi) =>
     p.items
-      .filter((k) => orderData.products[k] && quantities[`${pi}-${p.items.indexOf(k)}`] > 0)
-      .map((k, idx) => {
-        const qty = quantities[`${pi}-${idx}`];
+      .filter((k) => {
+        const itemIdx = p.items.indexOf(k);
+        return orderData.products[k] && quantities[`${pi}-${itemIdx}`] > 0;
+      })
+      .map((k) => {
+        const itemIdx = p.items.indexOf(k);
+        const qty = quantities[`${pi}-${itemIdx}`];
         const unit = productList[k].price * p.rate;
         const sub = unit * qty;
         const itbis = sub * taxRate;
-        return { id: `${pi}-${idx}`, item: productList[k].label, quantity: qty, itbis, subtotal: sub };
+        return { id: `${pi}-${itemIdx}`, item: productList[k].label, quantity: qty, itbis, subtotal: sub };
       })
   );
 
